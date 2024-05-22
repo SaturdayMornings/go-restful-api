@@ -10,7 +10,7 @@ import (
 func main() {
 	router := setupRouter()
 
-	store := tasks.initTaskStore()
+	store := tasks.initTasksStorage()
 
 	// Listen and Server in 0.0.0.0:8080
 	router.Run(":8080")

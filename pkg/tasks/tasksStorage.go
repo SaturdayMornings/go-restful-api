@@ -1,15 +1,15 @@
 package tasks
 
-type TasksStore struct {
+type TasksStorage struct {
 	// Tasks stored in memory using a hash map data structure
 	// key is id of task, value is task object
 	tasksTable map[string]Task
 }
 
 // Initializes hash map for task storage
-func initTaskStore() *TasksStore {
+func initTasksStorage() *TasksStorage {
 	tasksTable := make(map[string]Task)
-	return &TasksStore{
+	return &TasksStorage{
 		tasksTable,
 	}
 }
