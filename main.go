@@ -9,6 +9,9 @@ import (
 
 func main() {
 	router := setupRouter()
+
+	store := tasks.initTaskStore()
+
 	// Listen and Server in 0.0.0.0:8080
 	router.Run(":8080")
 }
@@ -20,7 +23,7 @@ type TasksHandler struct {
 	store taskStore
 }
 
-// Interface defining CRUD operations for use with store
+// Interface defining CRUD operations for use with data storage structure
 type taskStore interface {
 	// Create Task
 	Add(title string, description string) error
@@ -34,11 +37,20 @@ type taskStore interface {
 	List() (map[string]tasks.Task, error)
 }
 
+// POST /tasks
 func (h TasksHandler) CreateTask(c *gin.Context) {}
-func (h TasksHandler) GetTask(c *gin.Context)    {}
+
+// GET /tasks/{id}
+func (h TasksHandler) GetTask(c *gin.Context) {}
+
+// PUT /tasks/{id}
 func (h TasksHandler) UpdateTask(c *gin.Context) {}
+
+// DELETE /tasks/{id}
 func (h TasksHandler) RemoveTask(c *gin.Context) {}
-func (h TasksHandler) ListTask(c *gin.Context)   {}
+
+// GET /tasks
+func (h TasksHandler) ListTask(c *gin.Context) {}
 
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -127,6 +139,9 @@ func setupRouter() *gin.Engine {
 			c.JSON(http.StatusOK, gin.H{"status": "ok"})
 		}
 	})
+
+	// Routes for CRUD operations on Tasks
+	r.GET("/tasks", tasksHandler.ListTasks)
 
 	return r
 }
