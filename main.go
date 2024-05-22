@@ -3,8 +3,8 @@ package main
 import (
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"github.com/SaturdayMornings/go-restful-api/pkg/tasks"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -15,13 +15,23 @@ func main() {
 
 var db = make(map[string]string)
 
+// Struct with a store as an attribute for use with each handler method
 type TasksHandler struct {
 	store taskStore
 }
 
+// Interface defining CRUD operations for use with store
 type taskStore interface {
-	Add(id int, title string, description string, status string) error
-	List() (map[string]task tasks.Task, error)
+	// Create Task
+	Add(title string, description string) error
+	// Read single Task by id
+	Get(id string) (tasks.Task, error)
+	// PUT request for task by id
+	Update(id string, title string, description string, status string) error
+	// Delete task by id
+	Remove(id string) error
+	// List Tasks
+	List() (map[string]tasks.Task, error)
 }
 
 func CORSMiddleware() gin.HandlerFunc {
@@ -62,10 +72,9 @@ func setupRouter() *gin.Engine {
 	})
 
 	// Get all tasks
-	r.GET("/tasks", func(c *gin.Context){
+	r.GET("/tasks", func(c *gin.Context) {
 
 	})
-
 
 	// Get user value
 	r.GET("/user/:name", func(c *gin.Context) {
