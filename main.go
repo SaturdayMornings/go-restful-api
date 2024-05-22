@@ -34,6 +34,12 @@ type taskStore interface {
 	List() (map[string]tasks.Task, error)
 }
 
+func (h TasksHandler) CreateTask(c *gin.Context) {}
+func (h TasksHandler) GetTask(c *gin.Context)    {}
+func (h TasksHandler) UpdateTask(c *gin.Context) {}
+func (h TasksHandler) RemoveTask(c *gin.Context) {}
+func (h TasksHandler) ListTask(c *gin.Context)   {}
+
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
