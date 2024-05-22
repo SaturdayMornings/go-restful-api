@@ -1,15 +1,18 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
-	"github.com/SaturdayMornings/go-restful-api/pkg/tasks"
+	"github.com/SaturdayMornings/go-restful-api/tasks"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	router := setupRouter()
-	test = tasks.initTasksStorage()
+	store := tasks.InitTasksStorage()
+	fmt.Println(store)
+	store.LoadExamples()
 
 	// Listen and Server in 0.0.0.0:8080
 	router.Run(":8080")
