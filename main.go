@@ -9,8 +9,7 @@ import (
 
 func main() {
 	router := setupRouter()
-
-	store := tasks.initTasksStorage()
+	test = tasks.initTasksStorage()
 
 	// Listen and Server in 0.0.0.0:8080
 	router.Run(":8080")
@@ -141,7 +140,7 @@ func setupRouter() *gin.Engine {
 	})
 
 	// Routes for CRUD operations on Tasks
-	r.GET("/tasks", tasksHandler.ListTasks)
+	// r.GET("/tasks", tasksHandler.ListTasks)
 
 	return r
 }
