@@ -140,6 +140,13 @@ Replaces the task matching the provided ID and returns the updated task.
 
 Deletes a task matching the provided ID, and will return a success status or error.
 
+**Deleting task with ID of 1 on Postman**
+![image](https://github.com/SaturdayMornings/go-restful-api/assets/24395782/77388604-dcb5-47d0-a80f-2e9af7d30ee8)
+
+**Validating Task with ID 1 was removed**
+![image](https://github.com/SaturdayMornings/go-restful-api/assets/24395782/a12afe5a-4ac8-45c7-b64e-b65ba3c9582b)
+
+
 #### Example Reponse
 
 ```
