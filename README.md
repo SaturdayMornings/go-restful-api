@@ -21,6 +21,7 @@ This RESTful API was built using [Go](https://go.dev/) and the [Gin Web Framewor
 ### `POST /tasks`
 
 Creates a new task given a title and description, and the new task will have a randomly generated ID and a status of "Pending".
+
 **Creating a new Task using Postman**
 ![image](https://github.com/SaturdayMornings/go-restful-api/assets/24395782/7aa278dd-0cd3-4861-8b32-744b44e6e5b4)
 
