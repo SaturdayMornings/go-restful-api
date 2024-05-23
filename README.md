@@ -6,7 +6,7 @@ This RESTful API was built using [Go](https://go.dev/) and the [Gin Web Framewor
 
 ## Instructions to Install and Run the Application
 
-1. Clone down this repository.
+1. Clone this repository.
 2. run `$ go get -u`
 3. run `$ go mod tidy`
 4. Run application with `$ go run main.go`
