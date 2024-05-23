@@ -49,6 +49,8 @@ Creates a new task given a title and description, and the new task will have a r
 
 Returns a list of all tasks.
 
+![image](https://github.com/SaturdayMornings/go-restful-api/assets/24395782/f8e6097a-e8b9-4b50-b50a-47b269296158)
+
 #### Example Reponse
 
 ```
