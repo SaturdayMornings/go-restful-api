@@ -80,6 +80,9 @@ Returns a list of all tasks.
 
 Returns a tasks based on the provided ID.
 
+![image](https://github.com/SaturdayMornings/go-restful-api/assets/24395782/7573f786-19ea-43f6-ad4a-3e60ed98bf49)
+
+
 #### Example Reponse
 
 ```
