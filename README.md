@@ -105,6 +105,13 @@ Returns a tasks based on the provided ID.
 
 Replaces the task matching the provided ID and returns the updated task.
 
+**Editing task with ID 1 using Postman**
+![image](https://github.com/SaturdayMornings/go-restful-api/assets/24395782/d307923e-177d-4ba8-8ff7-77a001a67faf)
+
+**Validating Task with ID 1 has been edited on Postman when using a Read All**
+![image](https://github.com/SaturdayMornings/go-restful-api/assets/24395782/fcf5376d-dd3a-4f17-98df-84b67dda0011)
+
+
 #### Example Request Body
 
 ```
