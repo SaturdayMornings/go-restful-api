@@ -4,21 +4,33 @@ import (
 	"fmt"
 	"net/http"
 
+	"strconv"
+
 	"github.com/SaturdayMornings/go-restful-api/tasks"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	router := setupRouter()
+
+	// Initialize TaskStorage for in memory storage of tasks via map
 	store := tasks.InitTasksStorage()
-	fmt.Println(store)
+
+	// Load several mock Task objects from local JSON file
 	store.LoadExamples()
 
+	// Instantiate task Handler
+	tasksHandler := NewTasksHandler(store)
+
+	// Registering routes
+	router.GET("/tasks", tasksHandler.ListTask)
+	router.GET("/tasks/:id", tasksHandler.GetTask)
+	router.POST("/tasks", tasksHandler.CreateTask)
+	router.PUT("/tasks/:id", tasksHandler.UpdateTask)
+	router.DELETE("/tasks/:id", tasksHandler.RemoveTask)
 	// Listen and Server in 0.0.0.0:8080
 	router.Run(":8080")
 }
-
-var db = make(map[string]string)
 
 // Struct with a store as an attribute for use with each handler method
 type TasksHandler struct {
@@ -28,31 +40,113 @@ type TasksHandler struct {
 // Interface defining CRUD operations for use with data storage structure
 type taskStore interface {
 	// Create Task
-	Add(title string, description string) error
+	Add(task tasks.Task) error
 	// Read single Task by id
-	Get(id string) (tasks.Task, error)
+	Get(id int) (tasks.Task, error)
 	// PUT request for task by id
-	Update(id string, title string, description string, status string) error
+	Update(id int, task tasks.Task) (tasks.Task, error)
 	// Delete task by id
-	Remove(id string) error
+	Remove(id int) error
 	// List Tasks
-	List() (map[string]tasks.Task, error)
+	List() ([]tasks.Task, error)
+	GetNumericId() int
 }
 
-// POST /tasks
-func (h TasksHandler) CreateTask(c *gin.Context) {}
+// POST /tasks handler. Allows for creation of tasks
+func (h TasksHandler) CreateTask(c *gin.Context) {
+	var task tasks.Task
+
+	if err := c.ShouldBindJSON(&task); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Get id that is based off of total item count
+	id := h.store.GetNumericId()
+	task.Id = id
+
+	// Tasks by default have Status of Pending
+	task.Status = "Pending"
+
+	// Add task to the map storage solution
+	h.store.Add(task)
+
+	// Return status indicating task was successfully created along with created task
+	c.JSON(http.StatusOK, gin.H{"status": "success", "task": task})
+}
 
 // GET /tasks/{id}
-func (h TasksHandler) GetTask(c *gin.Context) {}
+func (h TasksHandler) GetTask(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+
+	task, err := h.store.Get(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+	}
+
+	c.JSON(200, task)
+}
 
 // PUT /tasks/{id}
-func (h TasksHandler) UpdateTask(c *gin.Context) {}
+func (h TasksHandler) UpdateTask(c *gin.Context) {
+	// Get request body and convert it to recipes.Recipe
+	var task tasks.Task
 
-// DELETE /tasks/{id}
-func (h TasksHandler) RemoveTask(c *gin.Context) {}
+	if err := c.ShouldBindJSON(&task); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	id, err := strconv.Atoi(c.Param("id"))
+	task.Id = id
+
+	updatedTask, err := h.store.Update(id, task)
+
+	if err != nil {
+		if err == tasks.ErrTaskNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success", "task": updatedTask})
+}
+
+// handler for DELETE /tasks/{id}
+func (h TasksHandler) RemoveTask(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+
+	if err != nil {
+		fmt.Println("strconv.Atoi() error")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+
+	deleteErr := h.store.Remove(id)
+
+	if deleteErr != nil {
+		if deleteErr == tasks.ErrTaskNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": deleteErr.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": deleteErr.Error()})
+		return
+	}
+
+	// return success payload
+	c.JSON(http.StatusOK, gin.H{"status": "success"})
+}
 
 // GET /tasks
-func (h TasksHandler) ListTask(c *gin.Context) {}
+func (h TasksHandler) ListTask(c *gin.Context) {
+	res, err := h.store.List()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+
+	c.JSON(200, res)
+}
 
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -71,9 +165,13 @@ func CORSMiddleware() gin.HandlerFunc {
 	}
 }
 
+func NewTasksHandler(t taskStore) *TasksHandler {
+	return &TasksHandler{
+		store: t,
+	}
+}
+
 func setupRouter() *gin.Engine {
-	// Disable Console Color
-	// gin.DisableConsoleColor()
 	r := gin.New()
 	r.Use(CORSMiddleware())
 	r.Use(gin.Logger())
@@ -84,66 +182,13 @@ func setupRouter() *gin.Engine {
 		c.String(http.StatusOK, "pong")
 	})
 
+	// Generic test for a GET route handler with a JSON response
 	r.GET("/test", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"status":  "success",
 			"message": "test data",
 		})
 	})
-
-	// Get all tasks
-	r.GET("/tasks", func(c *gin.Context) {
-
-	})
-
-	// Get user value
-	r.GET("/user/:name", func(c *gin.Context) {
-		user := c.Params.ByName("name")
-		value, ok := db[user]
-		if ok {
-			c.JSON(http.StatusOK, gin.H{"user": user, "value": value})
-		} else {
-			c.JSON(http.StatusOK, gin.H{"user": user, "status": "no value"})
-		}
-	})
-
-	// Authorized group (uses gin.BasicAuth() middleware)
-	// Same than:
-	// authorized := r.Group("/")
-	// authorized.Use(gin.BasicAuth(gin.Credentials{
-	//	  "foo":  "bar",
-	//	  "manu": "123",
-	//}))
-	authorized := r.Group("/", gin.BasicAuth(gin.Accounts{
-		"foo":  "bar", // user:foo password:bar
-		"manu": "123", // user:manu password:123
-	}))
-
-	/* example curl for /admin with basicauth header
-	   Zm9vOmJhcg== is base64("foo:bar")
-
-		curl -X POST \
-	  	http://localhost:8080/admin \
-	  	-H 'authorization: Basic Zm9vOmJhcg==' \
-	  	-H 'content-type: application/json' \
-	  	-d '{"value":"bar"}'
-	*/
-	authorized.POST("admin", func(c *gin.Context) {
-		user := c.MustGet(gin.AuthUserKey).(string)
-
-		// Parse JSON
-		var json struct {
-			Value string `json:"value" binding:"required"`
-		}
-
-		if c.Bind(&json) == nil {
-			db[user] = json.Value
-			c.JSON(http.StatusOK, gin.H{"status": "ok"})
-		}
-	})
-
-	// Routes for CRUD operations on Tasks
-	// r.GET("/tasks", tasksHandler.ListTasks)
 
 	return r
 }
